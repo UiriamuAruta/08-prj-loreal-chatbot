@@ -1,18 +1,54 @@
-/* DOM elements */
-const chatForm = document.getElementById("chatForm");
-const userInput = document.getElementById("userInput");
-const chatWindow = document.getElementById("chatWindow");
+// script.js
+const chatWindow = document.getElementById('chatWindow');
+const questionDisplay = document.getElementById('questionDisplay');
+const chatForm = document.getElementById('chatForm');
+const userInput = document.getElementById('userInput');
 
-// Set initial message
-chatWindow.textContent = "👋 Hello! How can I help you today?";
+// Your deployed Cloudflare Worker endpoint
+const workerUrl = 'https://uiriamuworker.xieyuuuu.workers.dev/';
+// Maintain conversation context for multi-turn
+const chatHistory = [];
 
-/* Handle form submit */
-chatForm.addEventListener("submit", (e) => {
+chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const message = userInput.value.trim();
+  if (!message) return;
 
-  // When using Cloudflare, you'll need to POST a `messages` array in the body,
-  // and handle the response using: data.choices[0].message.content
+  // Show user question above and in chat bubble
+  questionDisplay.textContent = message;
+  appendBubble(message, 'user');
+  chatHistory.push({ role: 'user', content: message });
+  userInput.value = '';
 
-  // Show message
-  chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  // Send history to Cloudflare Worker for secure OpenAI call
+  const response = await fetch(workerUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: chatHistory })
+  });
+  const data = await response.json();
+  const aiMessage = data.choices[0].message.content;
+
+  // Display AI response bubble
+  appendBubble(aiMessage, 'ai');
+  chatHistory.push({ role: 'assistant', content: aiMessage });
+
+  // Auto-scroll to latest
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 });
+
+/**
+ * Helper to append a message bubble
+ * @param {string} text
+ * @param {'user'|'ai'} sender
+ */
+function appendBubble(text, sender) {
+  const bubble = document.createElement('div');
+  bubble.classList.add('bubble', sender);
+  bubble.textContent = text;
+  chatWindow.appendChild(bubble);
+}
+
+// Note: System prompt is injected server-side in the Cloudflare Worker to enforce
+// that the assistant only answers on L’Oréal products, routines, and recommendations.
+

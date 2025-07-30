@@ -1,2 +1,30 @@
-# Secrets file containing API keys
-secrets.js
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Environment variables
+.env
+
+# VSCode settings
+.vscode/
+
+# IDE files
+.idea/
+
+# Wrangler (Cloudflare)
+wrangler.toml
+.wrangler/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
